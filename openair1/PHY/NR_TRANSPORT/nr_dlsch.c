@@ -328,7 +328,7 @@ static inline int csi_rm_case(c16_t *output,
         for (int re = 0; re < NR_NB_SC_PER_RB; re++) {
           if (!((csi_map >> re) & 1)) {
             int k = (start_sc + re) % symbol_sz;
-           output[k] = c16mulRealShift(*in++, amp, 15);
+            output[k] = c16mulRealShift(*in++, amp, 15);
           }
         }
       }

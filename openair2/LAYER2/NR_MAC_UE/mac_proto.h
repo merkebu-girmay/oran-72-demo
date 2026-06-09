@@ -117,7 +117,14 @@ int nr_get_csi_measurements(NR_UE_MAC_INST_t *mac,
                             nfapi_nr_ue_csi_payload_t *csi_payload,
                             NR_PUCCH_Resource_t **csi_pucch,
                             bool csi_on_pusch);
-
+void configure_csirs_pdu(fapi_nr_dl_config_csirs_pdu_rel15_t *csirs_config_pdu,
+                         NR_CSI_MeasConfig_t *csi_measconfig,
+                         NR_CSI_ResourceConfigId_t csi_res_id,
+                         NR_UE_DL_BWP_t *current_DL_BWP,
+                         long scramblingID,
+                         long powerControlOffset,
+                         long *powerControlOffsetSS,
+                         NR_CSI_RS_ResourceMapping_t *resourceMapping);
 nfapi_nr_ue_csi_payload_t nr_get_csi_payload(NR_UE_MAC_INST_t *mac,
                                  int csi_report_id,
                                  CSI_mapping_t mapping_type,

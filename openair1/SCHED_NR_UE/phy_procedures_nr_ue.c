@@ -649,7 +649,7 @@ static int nr_ue_pdsch_procedures(PHY_VARS_NR_UE *ue,
   return 0;
 }
 
-static uint32_t compute_csi_rm_unav_res(fapi_nr_dl_config_dlsch_pdu_rel15_t *dlsch_config)
+uint32_t compute_csi_rm_unav_res(fapi_nr_dl_config_dlsch_pdu_rel15_t *dlsch_config)
 {
   uint32_t unav_res = 0;
   for (int i = 0; i < dlsch_config->numCsiRsForRateMatching; i++) {

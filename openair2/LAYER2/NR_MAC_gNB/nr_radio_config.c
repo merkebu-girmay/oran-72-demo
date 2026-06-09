@@ -415,11 +415,8 @@ static void set_csirs_periodicity(NR_NZP_CSI_RS_Resource_t *nzpcsi0,
   }
 }
 
-static NR_NZP_CSI_RS_Resource_t *get_nzp_csi_rs_resource(int id, int num_dl_antenna_ports, int curr_bwp, long scramblingID)
+NR_CSI_RS_ResourceMapping_t configure_csi_resourcemapping(int num_dl_antenna_ports, int curr_bwp, int symbol)
 {
-  NR_NZP_CSI_RS_Resource_t *nzpcsi = calloc(1, sizeof(*nzpcsi));
-  nzpcsi->nzp_CSI_RS_ResourceId = id;
-
   NR_CSI_RS_ResourceMapping_t resourceMapping = {0};
   switch (num_dl_antenna_ports) {
     case 1:
@@ -471,14 +468,20 @@ static NR_NZP_CSI_RS_Resource_t *get_nzp_csi_rs_resource(int id, int num_dl_ante
     default:
       AssertFatal(false, "Number of ports not yet supported\n");
   }
-  resourceMapping.firstOFDMSymbolInTimeDomain = 13; // last symbol of slot
+  resourceMapping.firstOFDMSymbolInTimeDomain = symbol;
   resourceMapping.firstOFDMSymbolInTimeDomain2 = NULL;
   resourceMapping.density.present = NR_CSI_RS_ResourceMapping__density_PR_one;
   resourceMapping.density.choice.one = (NULL_t)0;
   resourceMapping.freqBand.startingRB = 0;
   resourceMapping.freqBand.nrofRBs = ((curr_bwp >> 2) + (curr_bwp % 4 > 0)) << 2;
+  return resourceMapping;
+}
 
-  nzpcsi->resourceMapping = resourceMapping;
+static NR_NZP_CSI_RS_Resource_t *get_nzp_csi_rs_resource(int id, int num_dl_antenna_ports, int curr_bwp, long scramblingID)
+{
+  NR_NZP_CSI_RS_Resource_t *nzpcsi = calloc(1, sizeof(*nzpcsi));
+  nzpcsi->nzp_CSI_RS_ResourceId = id;
+  nzpcsi->resourceMapping = configure_csi_resourcemapping(num_dl_antenna_ports, curr_bwp, 13); // last symbol of slot
   nzpcsi->powerControlOffset = 0;
   nzpcsi->powerControlOffsetSS = calloc(1, sizeof(*nzpcsi->powerControlOffsetSS));
   *nzpcsi->powerControlOffsetSS = NR_NZP_CSI_RS_Resource__powerControlOffsetSS_db0;
