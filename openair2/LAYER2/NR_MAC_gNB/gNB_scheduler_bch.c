@@ -263,6 +263,7 @@ static bool update_rb_mcs_tbs(NR_sched_pdsch_t *pdsch, uint32_t num_total_bytes,
       continue;
     int rbStart, rbSize;
     if (get_rb_alloc(pdsch->rbSize, pdsch->rbSize, bwpStart, bwpSize, vrb_map, slbitmap, &rbStart, &rbSize)) {
+      pdsch->alloc_type = PDSCH_TYPE1;
       pdsch->rbStart = rbStart;
       pdsch->rbSize = rbSize;
       break;
