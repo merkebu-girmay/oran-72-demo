@@ -193,6 +193,7 @@ typedef struct nr_mac_config_s {
   bool force_256qam_off;
   bool force_UL256qam_off;
   bool use_deltaMCS;
+  bool pdsch_type0;
   int maxMIMO_layers;
   bool disable_harq;
   nr_power_config_t pusch;

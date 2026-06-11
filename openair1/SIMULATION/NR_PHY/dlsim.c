@@ -173,7 +173,13 @@ void update_ptrs_config(NR_CellGroupConfig_t *secondaryCellGroup, uint16_t *rbSi
 void update_dmrs_config(NR_CellGroupConfig_t *scg, int8_t *dmrs_arg);
 
 /* specific dlsim DL preprocessor: uses rbStart/rbSize/mcs/nrOfLayers from command line of dlsim */
-int g_mcsIndex = -1, g_mcsTableIdx = 0, g_rbStart = -1, g_rbSize = -1, g_nrOfLayers = 1, g_pmi = 0;
+int g_mcsIndex = -1, g_mcsTableIdx = 0, g_rbStart = -1, g_rbSize = -1, g_nrOfLayers = 1, g_pmi = 0, g_nb_rb_ranges = 0, N_RB_DL = 106;
+nr_pdsch_allocation_type_t alloc_type = PDSCH_TYPE1;
+typedef struct {
+  int start;
+  int end;
+} rb_range_t;
+rb_range_t g_rb_ranges[16];
 
 void nr_dlsim_preprocessor(gNB_MAC_INST *nr_mac, post_process_pdsch_t *pp_pdsch)
 {
@@ -210,12 +216,23 @@ void nr_dlsim_preprocessor(gNB_MAC_INST *nr_mac, post_process_pdsch_t *pp_pdsch)
   NR_sched_pdsch_t sched_pdsch = {
       .rbStart = g_rbStart,
       .rbSize = g_rbSize,
-      .alloc_type = PDSCH_TYPE1,
+      .alloc_type = alloc_type,
       .bwp_info = get_pdsch_bwp_start_size(nr_mac, UE_info),
       .mcs = g_mcsIndex,
       .nrOfLayers = g_nrOfLayers,
       .pm_index = g_pmi,
   };
+
+  if (alloc_type == PDSCH_TYPE0) {
+    memset(sched_pdsch.rbBitmap, 0, sizeof(sched_pdsch.rbBitmap));
+    for (int r = 0; r < g_nb_rb_ranges; r++) {
+      for (int rb = g_rb_ranges[r].start; rb < g_rb_ranges[r].end; rb++) {
+        AssertFatal(rb < N_RB_DL, "RB index %d exceeds BWP size %d\n", rb, N_RB_DL);
+        sched_pdsch.rbBitmap[rb / 8] |= (1 << (rb % 8));
+      }
+    }
+  }
+
   /* the following might override the table that is mandated by RRC
    * configuration */
   current_BWP->mcsTableIdx = g_mcsTableIdx;
@@ -367,7 +384,7 @@ int main(int argc, char **argv)
 
   //double pbch_sinr;
   //int pbch_tx_ant;
-  int N_RB_DL=106,mu=1;
+  int mu = 1;
 
   //unsigned char frame_type = 0;
 
@@ -422,7 +439,7 @@ int main(int argc, char **argv)
   void *d_channel_coeffs_gpu = NULL;
 #endif
 
-  while ((c = getopt(argc, argv, "--:O:f:hA:p:g:i:n:s:S:t:v:x:y:z:o:H:M:N:F:GR:d:PI:L:a:b:e:m:w:T:U:q:X:Y:Z:Q:")) != -1) {
+  while ((c = getopt(argc, argv, "--:O:f:hA:p:g:i:n:s:S:t:v:x:y:z:o:H:M:N:F:GR:d:D:PI:L:a:b:e:m:w:T:U:q:X:Y:Z:Q:")) != -1) {
     /* ignore long options starting with '--', option '-O' and their arguments that are handled by configmodule */
     /* with this opstring getopt returns 1 for non-option arguments, refer to 'man 3 getopt' */
     if (c == 1 || c == '-' || c == 'O')
@@ -528,6 +545,17 @@ int main(int argc, char **argv)
 
     case 'R':
       N_RB_DL = atoi(optarg);
+      break;
+
+    case 'D':
+      alloc_type = PDSCH_TYPE0;
+      g_nb_rb_ranges = atoi(optarg);
+      for (i = 0; i < g_nb_rb_ranges; i++) {
+        if (sscanf(argv[optind++], "%d:%d", &g_rb_ranges[i].start, &g_rb_ranges[i].end) != 2) {
+           printf("Invalid RB range format, expected start:end\n");
+           exit(-1);
+        }
+      }
       break;
 
     case 'F':
@@ -750,6 +778,7 @@ int main(int argc, char **argv)
   pdsch_AntennaPorts.XP = n_tx > 1 ? 2 : 1;
   const nr_mac_config_t conf = {.pdsch_AntennaPorts = pdsch_AntennaPorts,
                                 .pusch_AntennaPorts = n_tx,
+                                .pdsch_type0 = alloc_type == PDSCH_TYPE0,
                                 .minRXTXTIME = 6,
                                 .do_CSIRS = 0,
                                 .do_SRS = 0,

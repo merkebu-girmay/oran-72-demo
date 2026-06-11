@@ -1553,6 +1553,7 @@ void RCconfig_nr_macrlc(configmodule_interface_t *cfg)
   config.force_UL256qam_off = *GNBParamList.paramarray[0][GNB_FORCEUL256QAMOFF_IDX].iptr;
   config.use_deltaMCS = *GNBParamList.paramarray[0][GNB_USE_DELTA_MCS_IDX].iptr != 0;
   config.maxMIMO_layers = *GNBParamList.paramarray[0][GNB_MAXMIMOLAYERS_IDX].iptr;
+  config.pdsch_type0 = false;
   config.disable_harq = *GNBParamList.paramarray[0][GNB_DISABLE_HARQ_IDX].iptr;
   config.num_dlharq = *GNBParamList.paramarray[0][GNB_NUM_DL_HARQ_IDX].iptr;
   config.num_ulharq =  *GNBParamList.paramarray[0][GNB_NUM_UL_HARQ_IDX].iptr;
