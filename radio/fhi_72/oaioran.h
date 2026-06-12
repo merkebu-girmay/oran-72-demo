@@ -8,14 +8,8 @@
 #include <stdint.h>
 #include "xran_fh_o_du.h"
 
-typedef struct {
-  uint32_t tti;
-  uint32_t sl;
-  uint32_t f;
-  uint8_t mu;
-  // the first column can expand to XRAN_MAX_SECTOR_NR for the support of multiple CCs
-  int32_t nRxPkt[1][XRAN_MAX_ANTENNA_NR][XRAN_NUM_OF_SYMBOL_PER_SLOT];
-} oran_sync_info_t;
+struct RU_t_s;
+void set_oran_ru(struct RU_t_s *ru);
 
 /** @brief xran callback for fronthaul RX, see xran_5g_fronthault_config(). */
 void oai_xran_fh_rx_callback(void *pCallbackTag, xran_status_t status, uint8_t mu);

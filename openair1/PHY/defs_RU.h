@@ -353,7 +353,8 @@ typedef enum {
   REMOTE_MBP_IF5  =2,
   REMOTE_IF4p5    =3,
   REMOTE_IF1pp    =4,
-  MAX_RU_IF_TYPES =5
+  REMOTE_IF7p2    =5,
+  MAX_RU_IF_TYPES =6
 } RU_if_south_t;
 
 
@@ -517,7 +518,22 @@ typedef struct RU_t_s {
   void (*wakeup_prach_eNB_br)(struct PHY_VARS_eNB_s *eNB, struct RU_t_s *ru, int frame, int subframe);
   /// function pointer to start a thread of tx write for USRP.
   int (*start_write_thread)(struct RU_t_s *ru);
+  /** Fired once when the FH stack has locked GPS timing.
+   *  Initializes proc from an absolute reference so no first_rx guard is needed. */
+  void (*on_timing_sync)(struct RU_t_s *ru,
+                         uint64_t gps_second,
+                         uint32_t tti_counter,
+                         int frame,
+                         int slot);
 
+  /** Fired per UL/Mixed slot when fronthaul RX data is ready in rxdataF. */
+  void (*on_rx_slot)(struct RU_t_s *ru,
+                     int frame,
+                     int slot,
+                     openair0_timestamp_t timestamp_rx);
+
+  /** Fired per PRACH slot (NULL for Split 7.2 — handled inside the xRAN callback). */
+  void (*get_prach_iq_slot)(struct RU_t_s *ru, int frame, int slot);
   /// function pointer to NB entry routine
   void (*eNB_top)(struct PHY_VARS_eNB_s *eNB, int frame_rx, int subframe_rx, char *string, struct RU_t_s *ru);
   void (*gNB_top)(struct PHY_VARS_gNB_s *gNB, int frame_rx, int slot_rx, char *string, struct RU_t_s *ru);
